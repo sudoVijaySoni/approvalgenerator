@@ -8,7 +8,6 @@ function addItem() {
     <td contenteditable="true" style="text-align: center">-</td>
     <td contenteditable="true" style="text-align: center">0.00 Ct. </td>
     <td contenteditable="true" style="text-align: center">0</td>
-    <td contenteditable="true" style="text-align: center">3</td>
     <td style="text-align: center" class="total-cell editable">
       <span>0.00</span>
       <button class="edit-btn no-print" onclick="editTotal(this)">✎</button>
@@ -36,60 +35,56 @@ function updateSerialNumbers() {
 
 function calculateTotals() {
   let amountTotal = 0;
-  let gstTotal = 0;
+  let totalWeight = 0;
+  let totalPieces = 0;
 
   document.querySelectorAll("#itemsBody tr").forEach((row) => {
-    const amountCell = row.cells[4]; // Amount is now in column 4 (0-based index)
-    const gstRateCell = row.cells[5]; // GST Rate is now in column 5
+    const piecesCell = row.cells[2];
+    const weightCell = row.cells[3];
+    const rateCell = row.cells[4];
     const totalSpan = row.querySelector(".total-cell span");
 
-    let amount = parseFloat(amountCell.innerText) || 0;
-    const gstRate = parseFloat(gstRateCell.innerText) || 0;
-    const gstAmount = (amount * gstRate) / 100;
+    const pieces = parseFloat(piecesCell.innerText) || 0;
+    let weightText = weightCell.innerText || "0";
+    let weight = parseFloat(weightText.replace(/[^\d.]/g, "")) || 0;
+    const rate = parseFloat(rateCell.innerText) || 0;
 
     const isManual = totalSpan.getAttribute("data-manual") === "true";
-
-    // If manually set, retain the value. If not, recalculate total.
     let total = isManual
-      ? parseFloat(totalSpan.textContent) || amount + gstAmount
-      : amount + gstAmount;
+      ? parseFloat(totalSpan.textContent) || 0
+      : weight * rate;
 
     if (!isManual) {
       totalSpan.textContent = total.toFixed(2);
     }
 
-    amountTotal += amount;
-    gstTotal += gstAmount;
+    amountTotal += total;
+    totalWeight += weight;
+    totalPieces += pieces;
   });
 
-  const cgst = gstTotal / 2;
-  const sgst = gstTotal / 2;
-
-  const grossTotal = amountTotal + gstTotal;
-  const roundedTotal = Math.round(grossTotal);
-  const roundOffAmount = (roundedTotal - grossTotal).toFixed(2);
+  const roundedTotal = Math.round(amountTotal);
+  const roundOffAmount = (roundedTotal - amountTotal).toFixed(2);
 
   const advance = parseFloat(
     document.getElementById("advancePayment")?.value || 0
   );
   const finalAmount = roundedTotal - advance;
 
-  // DOM updates
+  // Update table footer
   document.getElementById(
     "amountTotalFooter"
   ).textContent = `₹ ${amountTotal.toFixed(2)}`;
   document.getElementById(
     "grandTotalFooter"
   ).textContent = `₹ ${roundedTotal.toFixed(2)}`;
-  document.getElementById("calcAmount").textContent = amountTotal.toFixed(2);
-  document.getElementById("cgst").textContent = cgst.toFixed(2);
-  document.getElementById("sgst").textContent = sgst.toFixed(2);
-  document.getElementById("grandTotalDisplay").textContent =
-    roundedTotal.toFixed(2);
-  document.getElementById("roundOffDisplay").textContent = roundOffAmount;
-  document.getElementById("finalAmount").textContent = finalAmount.toFixed(2);
-  document.getElementById("amountInWords").textContent =
-    numberToWords(roundedTotal).toUpperCase() + " ONLY";
+
+  // Optional: add total rows to table footer if needed
+  if (document.getElementById("totalPiecesFooter"))
+    document.getElementById("totalPiecesFooter").textContent = totalPieces;
+  if (document.getElementById("totalWeightFooter"))
+    document.getElementById("totalWeightFooter").textContent =
+      totalWeight.toFixed(2);
 }
 
 function editTotal(btn) {
