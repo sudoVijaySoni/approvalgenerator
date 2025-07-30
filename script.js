@@ -6,7 +6,7 @@ function addItem() {
     <td style="text-align: center">${rowCount}</td>
     <td contenteditable="true">Item <br><small contenteditable="true"></small></td>
     <td contenteditable="true" style="text-align: center">-</td>
-    <td contenteditable="true" style="text-align: center">0.00 Gm.</td>
+    <td contenteditable="true" style="text-align: center">0.00 Ct. </td>
     <td contenteditable="true" style="text-align: center">0</td>
     <td contenteditable="true" style="text-align: center">3</td>
     <td style="text-align: center" class="total-cell editable">
@@ -216,9 +216,6 @@ function numberToWords(num) {
   return result.trim();
 }
 
-document
-  .getElementById("advancePayment")
-  .addEventListener("input", calculateTotals);
 document.getElementById("itemsBody").addEventListener("input", calculateTotals);
 
 // Update the window.onload function to set the date
