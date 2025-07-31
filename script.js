@@ -6,11 +6,11 @@ function addItem() {
     <td style="text-align: center">${rowCount}</td>
     <td contenteditable="true">Item <br><small contenteditable="true"></small></td>
     <td contenteditable="true" style="text-align: center">-</td>
-    <td contenteditable="true" style="text-align: center">0.00 Ct. </td>
+    <td contenteditable="true" style="text-align: center">0.00 Ct.</td>
     <td contenteditable="true" style="text-align: center">0</td>
-    <td style="text-align: center" class="total-cell editable">
+    <td contenteditable="true" style="text-align: center" class="total-cell editable">
       <span>0.00</span>
-      <button class="edit-btn no-print" onclick="editTotal(this)">✎</button>
+      <button class="edit-btn no-print" onclick="editTotal(this)"></button>
     </td>
     <td class="delete-cell no-print"><button onclick="deleteRow(this)">❌</button></td>
   `;
@@ -33,6 +33,7 @@ function updateSerialNumbers() {
   });
 }
 
+// Modify the calculateTotals function to show proper totals in footer
 function calculateTotals() {
   let amountTotal = 0;
   let totalWeight = 0;
@@ -71,21 +72,62 @@ function calculateTotals() {
   );
   const finalAmount = roundedTotal - advance;
 
-  // Update table footer
-  document.getElementById(
-    "amountTotalFooter"
-  ).textContent = `₹ ${amountTotal.toFixed(2)}`;
-  document.getElementById(
-    "grandTotalFooter"
-  ).textContent = `₹ ${roundedTotal.toFixed(2)}`;
-
-  // Optional: add total rows to table footer if needed
-  if (document.getElementById("totalPiecesFooter"))
-    document.getElementById("totalPiecesFooter").textContent = totalPieces;
-  if (document.getElementById("totalWeightFooter"))
-    document.getElementById("totalWeightFooter").textContent =
-      totalWeight.toFixed(2);
+  // Update table footer with plain numbers (no units)
+  document.getElementById("totalPiecesFooter").textContent = totalPieces;
+  document.getElementById("totalWeightFooter").textContent =
+    totalWeight.toFixed(2);
+  document.getElementById("grandTotalFooter").textContent =
+    amountTotal.toFixed(2);
 }
+
+// Update the event listener for Amount column editing
+document.getElementById("itemsBody").addEventListener("input", (e) => {
+  const cell = e.target.closest("td");
+  if (!cell) return;
+
+  const row = e.target.closest("tr");
+  const cellIndex = Array.from(row.cells).indexOf(cell);
+
+  // Handle Amount column editing (index 5)
+  if (cellIndex === 5) {
+    const amountSpan = cell.querySelector("span");
+    const weightCell = row.cells[3];
+    const rateCell = row.cells[4];
+
+    // Get cleaned values
+    const weightText = weightCell.textContent || "0";
+    const weight = parseFloat(weightText.replace(/[^\d.]/g, "")) || 0;
+
+    const amountText = cell.textContent || "0";
+    const amount = parseFloat(amountText.replace(/[^\d.]/g, "")) || 0;
+
+    // Check if weight is 0 and amount is being entered
+    if (weight === 0 && amount > 0) {
+      alert(
+        "Warning: Weight is 0! Please enter weight first before entering amount."
+      );
+      cell.textContent = ""; // Clear the invalid amount
+      amountSpan.textContent = "0.00";
+      return; // Exit the function
+    }
+
+    if (weight > 0) {
+      const newRate = amount / weight;
+      rateCell.textContent = newRate.toFixed(2);
+    }
+
+    // Update the span display
+    amountSpan.textContent = amount.toFixed(2);
+    amountSpan.setAttribute("data-manual", "true");
+  }
+  // Handle Rate column editing (index 4)
+  else if (cellIndex === 4) {
+    const amountSpan = row.querySelector(".total-cell span");
+    amountSpan.removeAttribute("data-manual");
+  }
+
+  calculateTotals();
+});
 
 function editTotal(btn) {
   const span = btn.parentElement.querySelector("span");
@@ -231,16 +273,3 @@ window.onload = function () {
   // Add one empty row by default when page loads
   addItem();
 };
-document.getElementById("itemsBody").addEventListener("input", (e) => {
-  const cell = e.target.closest("td");
-  const row = e.target.closest("tr");
-  const cellIndex = Array.from(row.cells).indexOf(cell);
-
-  if (cellIndex === 4) {
-    // Amount is now in column 4
-    const span = row.querySelector(".total-cell span");
-    span.removeAttribute("data-manual");
-  }
-
-  calculateTotals();
-});
