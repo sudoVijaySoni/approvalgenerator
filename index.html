@@ -119,12 +119,12 @@
           <table class="header-table billed-to-table">
             <tr>
               <td><strong>Name:</strong></td>
-              <td><input type="text" value="" /></td>
+              <td><textarea class="auto-grow" rows="1"></textarea></td>
             </tr>
             <tr>
               <td><strong>Address:</strong></td>
               <td>
-                <textarea rows="3"></textarea>
+                <textarea class="auto-grow" rows="1"></textarea>
               </td>
             </tr>
             <tr>
@@ -174,5 +174,13 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+      document.querySelectorAll('.auto-grow').forEach((el) => {
+        el.addEventListener('input', () => {
+          el.style.height = 'auto';
+          el.style.height = (el.scrollHeight) + 'px';
+        });
+      });
+    </script>
   </body>
 </html>
